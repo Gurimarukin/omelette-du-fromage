@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+
+  postgresql:
+    image:
+      postgres:11
+    container_name:
+      odf-postgresql
+    environment:
+      - POSTGRES_USER=elixir
+      - POSTGRES_PASSWORD=elixir
+      - POSTGRES_DB=shows_store_repo
+    ports:
+      - 5432:5432
