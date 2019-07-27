@@ -1,18 +1,41 @@
 defmodule ShowsStore do
-  @moduledoc """
-  Documentation for ShowsStore.
-  """
+  require Ecto.Query
 
-  @doc """
-  Hello world.
+  alias ShowsStore.Schema.Show
+  alias ShowsStore.Schema.Venue
+  alias ShowsStore.Schema.Band
 
-  ## Examples
+  def insert_show(show) do
+    show
+    |> Show.changeset()
+    |> ShowsStore.Repo.insert()
+  end
 
-      iex> ShowsStore.hello()
-      :world
+  def venue_query(%{name: name, zip_code: zip_code}) do
+    Venue
+    |> Ecto.Query.where(name: ^name)
+    |> Ecto.Query.where(zip_code: ^zip_code)
+  end
 
-  """
-  def hello do
-    :world
+  def band_query(%{name: name}) do
+    Ecto.Query.where(Band, name: ^name)
+  end
+
+  def shows() do
+    Show
+    |> ShowsStore.Repo.all()
+    |> ShowsStore.Repo.preload([:venue, :bands])
+  end
+
+  def venues() do
+    Venue
+    |> ShowsStore.Repo.all()
+    |> ShowsStore.Repo.preload([:shows])
+  end
+
+  def bands() do
+    Band
+    |> ShowsStore.Repo.all()
+    |> ShowsStore.Repo.preload([:shows])
   end
 end
