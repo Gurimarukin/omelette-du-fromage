@@ -17,3 +17,7 @@ config :shows_store, ShowsStore.Repo,
 
 config :shows_store,
   ecto_repos: [ShowsStore.Repo]
+
+# config :hound, driver: "phantomjs"
+
+config :scrapers, :months_to_scrap, 6
