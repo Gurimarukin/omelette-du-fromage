@@ -1,9 +1,7 @@
 defmodule ShowsStore do
   require Ecto.Query
 
-  alias ShowsStore.Schemas.Show
-  alias ShowsStore.Schemas.Venue
-  alias ShowsStore.Schemas.Band
+  alias ShowsStore.Schemas.{Show, Venue, Band}
 
   def insert_show(show) do
     show

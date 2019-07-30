@@ -3,8 +3,7 @@ defmodule ShowsStore.Schemas.Show do
 
   import Ecto.Query
 
-  alias ShowsStore.Schemas.Band
-  alias ShowsStore.Schemas.Venue
+  alias ShowsStore.Schemas.{Band, Venue}
 
   schema "shows" do
     field(:date, :utc_datetime)
