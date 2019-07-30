@@ -1,4 +1,4 @@
-defmodule ShowsStore.Schema.Venue do
+defmodule ShowsStore.Schemas.Venue do
   use Ecto.Schema
 
   schema "venues" do
@@ -6,7 +6,7 @@ defmodule ShowsStore.Schema.Venue do
     field(:website, :string)
     field(:city, :string)
     field(:zip_code, :string)
-    has_many(:shows, ShowsStore.Schema.Show)
+    has_many(:shows, ShowsStore.Schemas.Show)
   end
 
   def changeset(venue, params \\ %{}) do

@@ -1,20 +1,20 @@
-defmodule ShowsStore.Schema.Show do
+defmodule ShowsStore.Schemas.Show do
   use Ecto.Schema
 
   import Ecto.Query
 
-  alias ShowsStore.Schema.Band
-  alias ShowsStore.Schema.Venue
+  alias ShowsStore.Schemas.Band
+  alias ShowsStore.Schemas.Venue
 
   schema "shows" do
     field(:date, :utc_datetime)
     field(:price, :float)
     field(:link, :string)
-    belongs_to(:venue, ShowsStore.Schema.Venue, on_replace: :nilify)
+    belongs_to(:venue, Venue, on_replace: :nilify)
 
     many_to_many(
       :bands,
-      ShowsStore.Schema.Band,
+      Band,
       join_through: "band_show",
       on_replace: :delete
     )

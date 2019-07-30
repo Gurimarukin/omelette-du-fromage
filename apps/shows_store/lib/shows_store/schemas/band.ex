@@ -1,4 +1,4 @@
-defmodule ShowsStore.Schema.Band do
+defmodule ShowsStore.Schemas.Band do
   use Ecto.Schema
 
   schema "bands" do
@@ -9,7 +9,7 @@ defmodule ShowsStore.Schema.Band do
 
     many_to_many(
       :shows,
-      ShowsStore.Schema.Show,
+      ShowsStore.Schemas.Show,
       join_through: "band_show",
       on_replace: :delete
     )
