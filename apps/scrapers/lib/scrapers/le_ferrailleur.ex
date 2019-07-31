@@ -11,6 +11,7 @@ defmodule Scrapers.LeFerrailleur do
 
   def scrap do
     map_async(months_with_urls(), &scrap_month/1)
+    |> Enum.concat()
   end
 
   defp months_with_urls do
@@ -32,32 +33,61 @@ defmodule Scrapers.LeFerrailleur do
   end
 
   defp scrap_month(%{date: date, url: url}) do
-    Regex.replace(~r/\s+/, HTTPoison.get!(url).body, " ")
+    case http_get_body(url) do
+      {:ok, body} -> parse_month(body, date)
+      _ -> []
+    end
+  end
+
+  defp parse_month(body, date) do
+    Regex.replace(~r/\s+/, body, " ")
     |> Floki.filter_out(".last_month")
     |> Floki.find("a.calendar-item-con")
-    |> Enum.map(date_and_url(date))
+    |> Enum.flat_map(date_and_url(date))
     |> map_async(&scrap_event/1)
   end
 
   defp date_and_url(%{year: year, month: month}) do
     fn elt_a ->
-      day =
-        elt_a
-        |> Floki.find(".calendar-item-number")
-        |> Floki.text()
-        |> String.to_integer()
-
-      case Date.new(year, month, day) do
-        {:ok, date} ->
-          %{date: date, url: @base_url <> hd(Floki.attribute(elt_a, "href"))}
+      case {
+        Date.new(year, month, get_day(elt_a)),
+        get_url(elt_a)
+      } do
+        {{:ok, date}, {:ok, url}} -> [%{date: date, url: url}]
+        _ -> []
       end
     end
   end
 
-  def scrap_event(%{date: date, url: url}) do
-    parsed =
-      Regex.replace(~r/\s+/, HTTPoison.get!(url).body, " ")
-      |> Floki.parse()
+  defp get_day(elt_a) do
+    elt_a
+    |> Floki.find(".calendar-item-number")
+    |> Floki.text()
+    |> String.to_integer()
+  end
+
+  defp get_url(elt_a) do
+    path = List.first(Floki.attribute(elt_a, "href"))
+    if path == nil, do: :error, else: url_if_show(path)
+  end
+
+  defp url_if_show(path) do
+    if String.starts_with?(path, "/evenement/apero") do
+      :error
+    else
+      {:ok, @base_url <> path}
+    end
+  end
+
+  def scrap_event(event) do
+    case http_get_body(event.url) do
+      {:ok, body} -> parse_event(event, body)
+      _ -> []
+    end
+  end
+
+  defp parse_event(%{date: date, url: url}, body) do
+    parsed = Regex.replace(~r/\s+/, body, " ") |> Floki.parse()
 
     %ShowsStore.Schemas.Show{
       date: get_date_time(date, parsed),
@@ -171,9 +201,26 @@ defmodule Scrapers.LeFerrailleur do
     "#{@base_url}/get-month-event/#{date}/next"
   end
 
+  defp http_get_body(url) do
+    try do
+      HTTPoison.get(url) |> parse_response(url)
+    rescue
+      e -> {:error, e}
+    end
+  end
+
+  defp parse_response({:ok, %{body: body}}, _) do
+    {:ok, body}
+  end
+
+  defp parse_response(error, url) do
+    IO.inspect(url, label: "error for url")
+    error
+  end
+
   defp map_async(enum, f) do
     enum
     |> Enum.map(&Task.async(fn -> f.(&1) end))
-    |> Enum.map(&Task.await/1)
+    |> Enum.map(&Task.await(&1, :infinity))
   end
 end
