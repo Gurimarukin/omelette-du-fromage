@@ -9,6 +9,7 @@ defmodule RateLimiter.Application do
     children = [
       # Starts a worker by calling: RateLimiter.Worker.start_link(arg)
       # {RateLimiter.Worker, arg}
+      {DynamicSupervisor, name: RateLimiter.LimitersSupervisor, strategy: :one_for_one}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
