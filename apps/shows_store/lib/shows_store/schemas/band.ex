@@ -1,5 +1,6 @@
 defmodule ShowsStore.Schemas.Band do
   use Ecto.Schema
+  import Ecto.Changeset
 
   schema "bands" do
     field(:name, :string)
@@ -17,8 +18,9 @@ defmodule ShowsStore.Schemas.Band do
 
   def changeset(band, params \\ %{}) do
     band
-    |> Ecto.Changeset.cast(params, [:name, :website, :genres])
-    |> Ecto.Changeset.validate_required([:name])
+    |> cast(params, [:name, :website, :country, :genres])
+    |> validate_required([:name])
+    |> unique_constraint(:name)
   end
 
   def to_map(band) do

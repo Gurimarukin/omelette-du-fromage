@@ -1,7 +1,6 @@
 defmodule ShowsStore.Schemas.Show do
   use Ecto.Schema
-
-  import Ecto.Query
+  import Ecto.{Changeset, Query}
 
   alias ShowsStore.Schemas.{Band, Venue}
 
@@ -25,10 +24,11 @@ defmodule ShowsStore.Schemas.Show do
     {_, without_bands} = Map.pop(show, :bands)
 
     without_bands
-    |> Ecto.Changeset.cast(params, [:date, :price, :link])
-    |> Ecto.Changeset.validate_required([:date, :venue])
-    |> Ecto.Changeset.put_assoc(:venue, lookup_venue(show.venue))
-    |> Ecto.Changeset.put_assoc(:bands, get_or_insert_bands(show.bands))
+    |> cast(params, [:date, :price, :link])
+    |> validate_required([:date, :venue])
+    |> unique_constraint(:date, name: :shows_date_venue_id_index)
+    |> put_assoc(:venue, lookup_venue(show.venue))
+    |> put_assoc(:bands, get_or_insert_bands(show.bands))
   end
 
   defp lookup_venue(venue) do

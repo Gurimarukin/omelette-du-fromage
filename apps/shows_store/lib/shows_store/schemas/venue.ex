@@ -1,5 +1,6 @@
 defmodule ShowsStore.Schemas.Venue do
   use Ecto.Schema
+  import Ecto.Changeset
 
   schema "venues" do
     field(:name, :string)
@@ -11,7 +12,8 @@ defmodule ShowsStore.Schemas.Venue do
 
   def changeset(venue, params \\ %{}) do
     venue
-    |> Ecto.Changeset.cast(params, [:name, :website, :city, :zip_code])
-    |> Ecto.Changeset.validate_required([:name, :city, :zip_code])
+    |> cast(params, [:name, :website, :city, :zip_code])
+    |> validate_required([:name, :city, :zip_code])
+    |> unique_constraint(:name, name: :venues_name_zip_code_index)
   end
 end

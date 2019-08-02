@@ -11,3 +11,7 @@ Start the PostgreSQL container:
 If you want to connect to it:
 
     psql -h localhost -U elixir shows_store_repo # password: elixir
+
+Remove the container:
+
+    docker rm odf-postgresql
