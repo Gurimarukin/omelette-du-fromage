@@ -1,6 +1,7 @@
 defmodule RateLimiter.Queue do
   use GenStage
 
+  @spec start_link([{:name, atom}]) :: any
   def start_link(opts \\ []) do
     GenStage.start_link(__MODULE__, :ok, opts)
   end

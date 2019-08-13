@@ -3,28 +3,21 @@ defmodule RateLimiter.Limiter do
 
   alias RateLimiter.{Scheduler, Queue}
 
-  @doc """
-
-  `args`: arguments for Scheduler.init/1
-
-    * `max_demand`: integer, default: `5`
-
-    * `interval`: integer, interval in ms, default: `1000`
-
-  """
-  @spec start_link([{:max_demand, number} | {:interval, number}], any) :: any
-  def start_link(args \\ [], opts \\ []) do
-    GenServer.start_link(__MODULE__, args, opts)
+  @spec start_link({atom, [{:max_demand, number} | {:interval, number}], []}) :: {:ok, pid}
+  def start_link({name, scheduler_args, opts}) do
+    GenServer.start_link(__MODULE__, {name, scheduler_args}, opts)
   end
 
   @impl true
-  def init(args) do
-    {:ok, queue} = Queue.start_link()
-    {:ok, scheduler} = Scheduler.start_link(args)
+  def init({name, scheduler_args}) do
+    children = [
+      Supervisor.child_spec({Queue, [name: name]}, id: {Queue, name}),
+      Supervisor.child_spec({Scheduler, {name, scheduler_args, []}}, id: {Scheduler, name})
+    ]
 
-    GenStage.sync_subscribe(scheduler, to: queue)
+    Supervisor.start_link(children, strategy: :rest_for_one)
 
-    {:ok, queue}
+    {:ok, name}
   end
 
   def submit(limiter, job) do
@@ -32,8 +25,8 @@ defmodule RateLimiter.Limiter do
   end
 
   @impl true
-  def handle_call({:submit, job}, _from, queue) do
-    Queue.in(queue, job)
-    {:reply, :ok, queue}
+  def handle_call({:submit, job}, _from, name) do
+    Queue.in(name, job)
+    {:reply, :ok, name}
   end
 end
