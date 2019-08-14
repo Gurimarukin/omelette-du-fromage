@@ -4,19 +4,11 @@ defmodule RateLimiter do
 
   ## Example
 
-      iex> {:ok, limiter} = RateLimiter.create(:limiter_name)
-      {:ok, #PID<0.5095.0>}
-
-      iex> 1..50 \
-           |> Enum.map(&RateLimiter.submit(limiter, fn -> RateLimiter.dummy_job(&1) end)) \
-           |> Enum.map(&Task.await/1)
-      1
-      2
-      ...
-      50
-      [1, 2, ..., 50]
-
-      iex> RateLimiter.stop(limiter)
+      {:ok, limiter} = RateLimiter.create(:my_limiter)
+      1..5
+      |> Enum.map(&RateLimiter.submit(limiter, fn -> RateLimiter.dummy_job(&1) end))
+      |> Enum.map(&Task.await/1) # [1, 2, 3, 4, 5]
+      RateLimiter.stop(limiter)
 
   """
 
@@ -35,10 +27,14 @@ defmodule RateLimiter do
   @spec submit(pid, (none -> any)) :: Task.t()
   def submit(limiter, job) do
     Task.async(fn ->
-      Limiter.submit(limiter, get_job(job, self()))
+      if Process.alive?(limiter) do
+        Limiter.submit(limiter, get_job(job, self()))
 
-      receive do
-        {:result, result} -> result
+        receive do
+          {:result, result} -> {:ok, result}
+        end
+      else
+        {:error, :limiter_doesnt_exist}
       end
     end)
   end
