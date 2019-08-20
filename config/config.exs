@@ -11,6 +11,7 @@ config :shows_store,
 
 config :scrapers,
   url_getter: Scrapers.UrlGetter.HTTPoison,
+  todays_date: Scrapers.TodaysDate.Date,
   months_to_scrap: 2
 
 import_config "#{Mix.env()}.exs"

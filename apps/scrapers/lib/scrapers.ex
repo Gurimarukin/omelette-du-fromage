@@ -21,24 +21,4 @@ defmodule Scrapers do
     IO.inspect(url, label: "error for url")
     error
   end
-
-  defmodule UrlGetter do
-    @url_getter Application.get_env(:scrapers, :url_getter)
-                |> IO.inspect(label: "@url_getter")
-
-    @callback get(String.t()) :: {:ok, %{body: term}} | {:error, any}
-    # %{
-    #   __exception__: term(),
-    #   id: reference() | nil,
-    #   reason: any()
-    # }
-
-    def get(url), do: @url_getter.get(url)
-  end
-
-  defmodule HTTPoison do
-    @behaviour Scrapers.UrlGetter
-
-    def get(url), do: HTTPoison.get(url)
-  end
 end
