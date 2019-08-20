@@ -4,39 +4,47 @@ defmodule RateLimiter do
 
   ## Example
 
-      {:ok, limiter} = RateLimiter.create(:my_limiter)
-      1..5
-      |> Enum.map(&RateLimiter.submit(limiter, fn -> RateLimiter.dummy_job(&1) end))
-      |> Enum.map(&Task.await/1) # [1, 2, 3, 4, 5]
-      RateLimiter.stop(limiter)
+      iex> 1..5
+      ...> |> Enum.map(&RateLimiter.with_limit(:my_limiter, fn -> &1 end, max_demand: 3, interval: 500))
+      ...> |> Enum.map(&Task.await/1)
+      [1, 2, 3, 4, 5]
+      iex> RateLimiter.stop(:my_limiter)
+      :ok
+      iex> RateLimiter.stop(:my_limiter)
+      {:ok, :already_stopped}
+
+      iex> RateLimiter.with_limit(:my_limiter, fn -> :toto end) |> Task.await
+      :toto
 
   """
+  # use GenServer
 
   alias RateLimiter.Limiter
 
   @supervisor RateLimiter.LimitersSupervisor
 
-  @spec create(atom, [{:max_demand, number} | {:interval, number}]) :: pid
-  def create(name, scheduler_args \\ []) do
-    DynamicSupervisor.start_child(
-      @supervisor,
-      {Limiter, {name, scheduler_args, []}}
-    )
-  end
-
-  @spec submit(pid, (none -> any)) :: Task.t()
-  def submit(limiter, job) do
+  @spec with_limit(atom, (none -> any), [{:max_demand, number} | {:interval, number}]) :: Task.t()
+  def with_limit(name, job, scheduler_args \\ []) do
     Task.async(fn ->
-      if Process.alive?(limiter) do
-        Limiter.submit(limiter, get_job(job, self()))
+      limiter(name, scheduler_args)
+      |> Limiter.submit(get_job(job, self()))
 
-        receive do
-          {:result, result} -> {:ok, result}
-        end
-      else
-        {:error, :limiter_doesnt_exist}
+      receive do
+        {:result, result} -> result
       end
     end)
+  end
+
+  defp limiter(name, scheduler_args) do
+    full_name = Module.concat(Limiter, name)
+
+    case DynamicSupervisor.start_child(
+           @supervisor,
+           {Limiter, {name, scheduler_args, [name: full_name]}}
+         ) do
+      {:ok, pid} -> pid
+      {:error, {:already_started, pid}} -> pid
+    end
   end
 
   defp get_job(job, parent) do
@@ -48,8 +56,18 @@ defmodule RateLimiter do
     end
   end
 
-  def stop(limiter) do
-    DynamicSupervisor.terminate_child(@supervisor, limiter)
+  def whereis(name) do
+    GenServer.whereis(Module.concat(Limiter, name))
+  end
+
+  def stop(name) do
+    pid = whereis(name)
+
+    if pid != nil do
+      DynamicSupervisor.terminate_child(@supervisor, pid)
+    else
+      {:ok, :already_stopped}
+    end
   end
 
   def dummy_job(i) do

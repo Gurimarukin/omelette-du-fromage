@@ -2,46 +2,50 @@ defmodule RateLimiterTest do
   use ExUnit.Case
   doctest RateLimiter
 
-  test "creates a limiter" do
-    {:ok, limiter} = RateLimiter.create(:my_limiter)
+  test "creates limiters" do
+    assert RateLimiter.whereis(:limiter1) == nil
+    assert RateLimiter.whereis(:limiter2) == nil
 
-    res = RateLimiter.submit(limiter, fn -> :toto end) |> Task.await()
-    assert res == {:ok, :toto}
+    res = RateLimiter.with_limit(:limiter1, fn -> :toto end) |> Task.await()
+    assert res == :toto
 
-    {:error,
-     {:shutdown,
-      {:failed_to_start_child, {RateLimiter.Queue, :my_limiter}, {:already_started, queue}}}} =
-      RateLimiter.create(:my_limiter)
+    assert RateLimiter.whereis(:limiter1) != nil
+    assert RateLimiter.whereis(:limiter2) == nil
 
-    assert queue != limiter
-  end
+    res = RateLimiter.with_limit(:limiter2, fn -> :toto end) |> Task.await()
+    assert res == :toto
 
-  test "stops a limiter" do
-    {:ok, limiter} = RateLimiter.create(:other_limiter)
+    assert RateLimiter.whereis(:limiter1) != nil
+    assert RateLimiter.whereis(:limiter2) != nil
 
-    assert RateLimiter.stop(limiter) == :ok
+    assert RateLimiter.stop(:limiter1) == :ok
 
-    res = RateLimiter.submit(limiter, fn -> :toto end) |> Task.await()
+    assert RateLimiter.whereis(:limiter1) == nil
+    assert RateLimiter.whereis(:limiter2) != nil
 
-    assert res == {:error, :limiter_doesnt_exist}
+    assert RateLimiter.stop(:limiter2) == :ok
 
-    assert RateLimiter.stop(limiter) == {:error, :not_found}
-  end
+    assert RateLimiter.whereis(:limiter1) == nil
+    assert RateLimiter.whereis(:limiter2) == nil
 
-  test "respects rate" do
-    {:ok, limiter} = RateLimiter.create(:a_limiter, max_demand: 3, interval: 2000)
+    assert RateLimiter.stop(:limiter2) == {:ok, :already_stopped}
 
     before = Time.utc_now()
 
     res =
       1..6
-      |> Enum.map(&RateLimiter.submit(limiter, fn -> &1 end))
+      |> Enum.map(
+        &RateLimiter.with_limit(:limiter, fn -> &1 end,
+          max_demand: 3,
+          interval: 500
+        )
+      )
       |> Enum.map(&Task.await/1)
 
     diff = Time.diff(Time.utc_now(), before, :millisecond)
 
-    assert res == [{:ok, 1}, {:ok, 2}, {:ok, 3}, {:ok, 4}, {:ok, 5}, {:ok, 6}]
-    assert diff >= 4000
-    assert diff < 5000
+    assert res == [1, 2, 3, 4, 5, 6]
+    assert diff >= 1000
+    assert diff < 1500
   end
 end

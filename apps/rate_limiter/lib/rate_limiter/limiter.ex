@@ -3,21 +3,24 @@ defmodule RateLimiter.Limiter do
 
   alias RateLimiter.{Scheduler, Queue}
 
-  @spec start_link({atom, [{:max_demand, number} | {:interval, number}], []}) :: {:ok, pid}
+  @spec start_link({atom, [{:max_demand, number} | {:interval, number}], [{:name, atom}]}) ::
+          {:ok, pid}
   def start_link({name, scheduler_args, opts}) do
     GenServer.start_link(__MODULE__, {name, scheduler_args}, opts)
   end
 
   @impl true
   def init({name, scheduler_args}) do
+    full_name = Module.concat(Queue, name)
+
     children = [
-      Supervisor.child_spec({Queue, [name: name]}, id: {Queue, name}),
-      Supervisor.child_spec({Scheduler, {name, scheduler_args, []}}, id: {Scheduler, name})
+      Supervisor.child_spec({Queue, [name: full_name]}, id: {Queue, name}),
+      Supervisor.child_spec({Scheduler, {full_name, scheduler_args, []}}, id: {Scheduler, name})
     ]
 
     Supervisor.start_link(children, strategy: :rest_for_one)
 
-    {:ok, name}
+    {:ok, full_name}
   end
 
   def submit(limiter, job) do
