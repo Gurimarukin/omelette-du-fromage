@@ -10,64 +10,80 @@ defmodule Scrapers.LeFerrailleur do
   }
 
   def scrap do
-    map_async(months_with_urls(), &scrap_month/1)
-    |> Enum.concat()
+    try do
+      %{months: months, urls: urls} = months_with_urls()
+
+      urls
+      |> Scrapers.get_bodys(__MODULE__)
+      |> Enum.zip(months)
+      |> Enum.flat_map(&scrap_month/1)
+    after
+      RateLimiter.stop(__MODULE__)
+    end
   end
 
   defp months_with_urls do
-    months = Application.fetch_env!(:scrapers, :months_to_scrap)
-    before = Date.utc_today()
-    {_, res} = Enum.reduce(0..months, {before, []}, &month_with_url/2)
+    number_of_months = Application.fetch_env!(:scrapers, :months_to_scrap)
+    before = Scrapers.TodaysDate.get()
+
+    {_, res} =
+      Enum.reduce(0..(number_of_months - 1), {before, %{months: [], urls: []}}, &month_with_url/2)
+
     res
   end
 
   defp month_with_url(_, {date, acc}) do
     new_date = month_after(date)
+    new_month = %{year: date.year, month: date.month}
+    new_url = url_from_date(date)
 
-    elt = %{
-      date: %{year: date.year, month: date.month},
-      url: url_from_date(date)
-    }
-
-    {new_date, [elt | acc]}
+    {new_date, %{months: [new_month | acc.months], urls: [new_url | acc.urls]}}
   end
 
-  defp scrap_month(%{date: date, url: url}) do
-    case http_get_body(url) do
-      {:ok, body} -> parse_month(body, date)
-      _ -> []
-    end
+  defp scrap_month({{:ok, body}, date}) do
+    parse_month(body, date)
+  end
+
+  defp scrap_month({{:error, _}, _}) do
+    []
   end
 
   defp parse_month(body, date) do
-    Regex.replace(~r/\s+/, body, " ")
-    |> Floki.filter_out(".last_month")
-    |> Floki.find("a.calendar-item-con")
-    |> Enum.flat_map(date_and_url(date))
-    |> map_async(&scrap_event/1)
+    dates_and_urls =
+      Regex.replace(~r/\s+/, body, " ")
+      |> Floki.filter_out(".last_month")
+      |> Floki.find("a.calendar-item-con")
+      |> Enum.flat_map(date_and_url(date))
+
+    dates_and_urls
+    |> Enum.map(fn {_, url} -> url end)
+    |> Scrapers.get_bodys(__MODULE__)
+    |> Enum.zip(dates_and_urls)
+    |> Enum.flat_map(&scrap_event/1)
   end
 
   defp date_and_url(%{year: year, month: month}) do
-    fn elt_a ->
-      case {
-        Date.new(year, month, get_day(elt_a)),
-        get_url(elt_a)
-      } do
-        {{:ok, date}, {:ok, url}} -> [%{date: date, url: url}]
+    fn anchor ->
+      {
+        Date.new(year, month, get_day(anchor)),
+        get_href(anchor)
+      }
+      |> case do
+        {{:ok, date}, {:ok, url}} -> [{date, url}]
         _ -> []
       end
     end
   end
 
-  defp get_day(elt_a) do
-    elt_a
+  defp get_day(anchor) do
+    anchor
     |> Floki.find(".calendar-item-number")
     |> Floki.text()
     |> String.to_integer()
   end
 
-  defp get_url(elt_a) do
-    path = List.first(Floki.attribute(elt_a, "href"))
+  defp get_href(anchor) do
+    path = List.first(Floki.attribute(anchor, "href"))
     if path == nil, do: :error, else: url_if_show(path)
   end
 
@@ -79,14 +95,14 @@ defmodule Scrapers.LeFerrailleur do
     end
   end
 
-  def scrap_event(event) do
-    case http_get_body(event.url) do
-      {:ok, body} -> parse_event(event, body)
+  defp scrap_event({parse_result, date_and_url}) do
+    case parse_result do
+      {:ok, body} -> [parse_event(body, date_and_url)]
       _ -> []
     end
   end
 
-  defp parse_event(%{date: date, url: url}, body) do
+  defp parse_event(body, {date, url}) do
     parsed = Regex.replace(~r/\s+/, body, " ") |> Floki.parse()
 
     %ShowsStore.Schemas.Show{
@@ -117,24 +133,25 @@ defmodule Scrapers.LeFerrailleur do
   end
 
   defp get_price(elt) do
-    values =
-      elt
-      |> values_for_label("prix")
-      |> Enum.map(&Floki.text/1)
+    elt
+    |> values_for_label("prix")
+    |> Enum.map(&Floki.text/1)
+    |> case do
+      [] ->
+        nil
 
-    if Enum.any?(values, &String.contains?(&1, "€")) do
-      values
-      |> Enum.flat_map(&parse_euros/1)
-      |> Enum.max(fn -> 0.0 end)
-    else
-      0.0
+      values ->
+        values
+        |> Enum.flat_map(&parse_euros/1)
+        |> Enum.max(fn -> 0.0 end)
     end
   end
 
   defp parse_euros(value) do
-    case String.split(value, "€") do
-      [_] -> []
+    String.split(value, "€")
+    |> case do
       [res, _] -> [res |> String.trim() |> String.to_float()]
+      _ -> []
     end
   end
 
@@ -175,10 +192,11 @@ defmodule Scrapers.LeFerrailleur do
   end
 
   defp get_website(elt) do
-    case elt
-         |> Floki.find(".block_band_socials > a")
-         |> Floki.attribute("href")
-         |> List.first() do
+    elt
+    |> Floki.find(".block_band_socials > a")
+    |> Floki.attribute("href")
+    |> List.first()
+    |> case do
       "" -> nil
       res -> res
     end
@@ -192,35 +210,12 @@ defmodule Scrapers.LeFerrailleur do
     |> Enum.map(&String.trim/1)
   end
 
-  defp month_before(date), do: Date.add(date, -Date.days_in_month(date))
+  def month_before(date), do: Date.add(date, -Date.days_in_month(date))
 
-  defp month_after(date), do: Date.add(date, Date.days_in_month(date))
+  def month_after(date), do: Date.add(date, Date.days_in_month(date))
 
   defp url_from_date(date) do
     date = Date.to_iso8601(month_before(date))
     "#{@base_url}/get-month-event/#{date}/next"
-  end
-
-  defp http_get_body(url) do
-    try do
-      HTTPoison.get(url) |> parse_response(url)
-    rescue
-      e -> {:error, e}
-    end
-  end
-
-  defp parse_response({:ok, %{body: body}}, _) do
-    {:ok, body}
-  end
-
-  defp parse_response(error, url) do
-    IO.inspect(url, label: "error for url")
-    error
-  end
-
-  defp map_async(enum, f) do
-    enum
-    |> Enum.map(&Task.async(fn -> f.(&1) end))
-    |> Enum.map(&Task.await(&1, :infinity))
   end
 end
