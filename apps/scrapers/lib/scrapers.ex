@@ -1,4 +1,6 @@
 defmodule Scrapers do
+  require Logger
+
   def get_bodys(urls, name) do
     urls
     |> Enum.map(&RateLimiter.with_limit(name, fn -> get_body(&1) end))
@@ -18,7 +20,9 @@ defmodule Scrapers do
   end
 
   defp parse_response(error, url) do
-    IO.inspect(url, label: "error for url")
+    ("error while retrieving url " <> inspect(url))
+    |> Logger.info()
+
     error
   end
 end
