@@ -49,6 +49,6 @@ defmodule Scrapers.CronJob do
 
   defp scrap(scraper) do
     Logger.info("scraping " <> inspect(scraper))
-    scraper.scrap |> IO.inspect(label: "scrap result")
+    scraper.scrap |> Enum.map(&ShowsStore.insert_show/1)
   end
 end
