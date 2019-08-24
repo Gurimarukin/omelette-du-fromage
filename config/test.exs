@@ -3,5 +3,6 @@ import Config
 config :logger, level: :warn
 
 config :scrapers,
-  url_getter: ScrapersTest.UrlGetter.Mock,
-  todays_date: ScrapersTest.TodaysDate.Mock
+  url_getter: Scrapers.Mocks.UrlGetter,
+  todays_date: Scrapers.Mocks.TodaysDate,
+  scrap_on: false

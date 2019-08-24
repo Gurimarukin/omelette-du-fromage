@@ -1,4 +1,4 @@
-defmodule LeFerrailleurTest.WallsOfJerichoStinkyHtml do
+defmodule Scrapers.Mocks.LeFerrailleur.WallsOfJerichoStinkyHtml do
   def get do
     """
     <!DOCTYPE html>

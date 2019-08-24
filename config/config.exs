@@ -12,6 +12,11 @@ config :shows_store,
 config :scrapers,
   url_getter: Scrapers.UrlGetter.HTTPoison,
   todays_date: Scrapers.TodaysDate.Date,
-  months_to_scrap: 2
+  months_to_scrap: 2,
+  scrap_on: true,
+  scrap_every_n_hours: 24,
+  scrapers: [
+    Scrapers.LeFerrailleur
+  ]
 
 import_config "#{Mix.env()}.exs"

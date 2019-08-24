@@ -1,4 +1,4 @@
-defmodule LeFerrailleurTest.Next20190821Html do
+defmodule Scrapers.Mocks.LeFerrailleur.Next20190821Html do
   def get do
     """
     <div class="swiper-slide"><input type="hidden" value="2019-09-01" class="thisMonth" /><input type="hidden" value="septembre 2019" class="thisMonthText" /><div class="calendar-item calendar-day no-hover">Lundi</div><div class="calendar-item calendar-day no-hover">Mardi</div><div class="calendar-item calendar-day no-hover">Mercredi</div><div class="calendar-item calendar-day no-hover">Jeudi</div><div class="calendar-item calendar-day no-hover">Vendredi</div><div class="calendar-item calendar-day no-hover">Samedi</div><div class="calendar-item calendar-day no-hover">Dimanche</div><div class="calendar-item

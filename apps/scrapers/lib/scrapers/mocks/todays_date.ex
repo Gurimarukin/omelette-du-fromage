@@ -1,4 +1,4 @@
-defmodule ScrapersTest.TodaysDate.Mock do
+defmodule Scrapers.Mocks.TodaysDate do
   @behaviour Scrapers.TodaysDate
 
   def get, do: ~D[2019-08-20]

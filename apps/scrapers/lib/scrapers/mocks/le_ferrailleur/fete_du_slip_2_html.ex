@@ -1,4 +1,4 @@
-defmodule LeFerrailleurTest.FeteDuSlip2Html do
+defmodule Scrapers.Mocks.LeFerrailleur.FeteDuSlip2Html do
   def get do
     """
     <!DOCTYPE html>
