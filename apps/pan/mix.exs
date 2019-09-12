@@ -24,6 +24,7 @@ defmodule Pan.MixProject do
   def application do
     [
       mod: {Pan.Application, []},
+      # applications: [:timex],
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -37,6 +38,7 @@ defmodule Pan.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:shows_store, in_umbrella: true},
       {:phoenix, "~> 1.4.9"},
       {:phoenix_pubsub, "~> 1.1"},
       {:phoenix_ecto, "~> 4.0"},
@@ -47,7 +49,8 @@ defmodule Pan.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:pbkdf2_elixir, "~> 1.0"}
+      {:pbkdf2_elixir, "~> 1.0"},
+      {:timex, "~> 3.0"}
     ]
   end
 
