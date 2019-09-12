@@ -1,3 +1,41 @@
 /* This file is for your main application css. */
 
-@import "./phoenix.css";
+@import './phoenix.css';
+
+@import './show/index.css';
+@import './show/show.css';
+
+body {
+    background-color: navy;
+    color: wheat;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 1em;
+    background-color: darkgoldenrod;
+    align-items: center;
+}
+
+.header__home {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: darkred;
+    letter-spacing: -0.1ch;
+}
+
+.header__links {
+    display: flex;
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.header__links:last-of-type {
+    justify-content: flex-end;
+}
+
+.header__link:not(:last-of-type) {
+    order: initial;
+    margin-right: 0.67em;
+}

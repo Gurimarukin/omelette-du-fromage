@@ -1,0 +1,15 @@
+<section class="shows-container">
+  <aside>
+  </aside>
+  <section class="shows">
+    <%= for show <- @shows do %>
+      <%= link to: Routes.show_path(@conn, :show, show.id), class: "show-li" do %>
+        <div class="show-li__venue-and-date">
+          <span class="show-li__venue"><%= venue(show) %></span>
+          <span><%= format_date_fr(show.date) %></span>
+        </div>
+        <div class="show-li__bands"><%= bands(show) %></div>
+      <% end %>
+    <% end %>
+  </section>
+</section>

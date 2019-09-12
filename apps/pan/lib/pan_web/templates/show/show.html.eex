@@ -1,0 +1,23 @@
+<section class="show-container">
+  <div class="show">
+    <div class="show__columns">
+      <div class="show__column">
+        <%= link venue(@show), to: Routes.venue_path(@conn, :show, @show.venue.id), class: "show__venue" %>
+        <span><%= format_date_fr(@show.date) %></span>
+        <span><%= format_time_fr(@show.date) %></span>
+      </div>
+      <div class="show__column_right">
+        <%= link "lien", to: @show.link, target: "_blank" %>
+        <span><%= price(@show) %></span>
+      </div>
+    </div>
+    <hr class="show__hr" />
+    <ul class="show__bands">
+      <%= for band <- @show.bands do %>
+        <li>
+          <%= link band.name, to: Routes.band_path(@conn, :show, band.id) %> : <%= genres(band) %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</section>

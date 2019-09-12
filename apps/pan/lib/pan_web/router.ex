@@ -22,6 +22,12 @@ defmodule PanWeb.Router do
     get "/hello/:name", HelloController, :world
     get "/hello", HelloController, :world
 
+    resources "/shows", ShowController, only: [:index, :show]
+
+    resources "/venues", VenueController, only: [:index, :show]
+
+    resources "/bands", BandController, only: [:index, :show]
+
     resources "/users", UserController, only: [:index, :show, :new, :create]
     # get "/users", UserController, :index
     # get "/users/:id", UserController, :show
