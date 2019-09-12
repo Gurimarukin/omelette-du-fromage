@@ -32,7 +32,7 @@ defmodule ShowsStore.Schemas.Show do
   end
 
   defp lookup_venue(venue) do
-    ShowsStore.venue_query(venue)
+    ShowsStore.find_venue(venue)
     |> ShowsStore.Repo.one()
     |> case do
       nil -> Venue.changeset(venue)
