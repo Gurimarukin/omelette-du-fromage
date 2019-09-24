@@ -21,6 +21,7 @@ defmodule PanWeb do
       use Phoenix.Controller, namespace: PanWeb
 
       import Plug.Conn
+      import Phoenix.LiveView.Controller
       import PanWeb.Gettext
       import PanWeb.Auth, only: [authenticate_user: 2]
       alias PanWeb.Router.Helpers, as: Routes
@@ -39,6 +40,9 @@ defmodule PanWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
+      import Phoenix.LiveView,
+        only: [live_render: 2, live_render: 3, live_link: 1, live_link: 2]
+
       import PanWeb.ErrorHelpers
       import PanWeb.Gettext
       alias PanWeb.Router.Helpers, as: Routes
@@ -48,6 +52,7 @@ defmodule PanWeb do
   def router do
     quote do
       use Phoenix.Router
+      import Phoenix.LiveView.Router
       import Plug.Conn
       import Phoenix.Controller
       import PanWeb.Auth, only: [authenticate_user: 2]

@@ -1,6 +1,8 @@
 defmodule PanWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :pan
 
+  socket "/live", Phoenix.LiveView.Socket
+
   socket "/socket", PanWeb.UserSocket,
     websocket: true,
     longpoll: false

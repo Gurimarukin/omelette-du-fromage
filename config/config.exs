@@ -27,7 +27,10 @@ config :pan, PanWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "Ior2A8wDYyhgwkXLRQY0zzjnDjuM152/3vVere40rkL9tb5794F0afpD4KC1l6GK",
   render_errors: [view: PanWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: Pan.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub: [name: Pan.PubSub, adapter: Phoenix.PubSub.PG2],
+  live_view: [
+    signing_salt: "PBY76kZ7p0cOR532gCSqd1x6l/j8/nBq"
+  ]
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
