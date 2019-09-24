@@ -244,11 +244,13 @@ input[type='radio'] {
 }
 a {
     color: #0069d9;
+    color: inherit;
     text-decoration: none;
 }
 a:focus,
 a:hover {
     color: #606c76;
+    color: inherit;
 }
 b,
 strong {

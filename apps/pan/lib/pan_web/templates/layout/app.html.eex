@@ -8,30 +8,30 @@
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
   </head>
   <body>
-    <header>
-      <nav class="header" role="navigation">
-        <section class="header__links">
-          <%= link "Concerts", to: Routes.show_path(@conn, :index), class: "header__link" %>
-          <%= link "Salles", to: Routes.venue_path(@conn, :index), class: "header__link" %>
-          <%= link "Groupes", to: Routes.band_path(@conn, :index), class: "header__link" %>
-        </section>
-        <%= link "Omelette du Fromage", to: Routes.page_path(@conn, :index), class: "header__home" %>
-        <section class="header__links">
-          <%= if @current_user do %>
-            <div class="header__link"><%= @current_user.username %></div>
-            <%= link "Log out", to: Routes.session_path(@conn, :delete, @current_user), method: "delete", class: "header__link" %>
-          <% else %>
-            <%= link "Register", to: Routes.user_path(@conn, :new), class: "header__link" %>
-            <%= link "Log in", to: Routes.session_path(@conn, :new, class: "header__link") %>
-          <% end %>
-        </section>
+    <div class="root">
+      <nav class="root__nav">
+        <%= link "Omelette du Fromage", to: Routes.page_path(@conn, :index), class: "root__home" %>
+        <div class="root__links">
+            <%= cat_link(@conn, "Concerts", to: Routes.show_path(@conn, :index)) %>
+            <%= cat_link(@conn, "Salles", to: Routes.venue_path(@conn, :index)) %>
+            <%= cat_link(@conn, "Groupes", to: Routes.band_path(@conn, :index)) %>
+        </div>
+        <div class="root__links">
+            <%= if @current_user do %>
+              <div class="root__link"><%= @current_user.username %></div>
+              <%= link "Log out", to: Routes.session_path(@conn, :delete, @current_user), method: "delete", class: "root__link" %>
+            <% else %>
+              <%= link "Register", to: Routes.user_path(@conn, :new), class: "root__link" %>
+              <%= link "Log in", to: Routes.session_path(@conn, :new), class: "root__link" %>
+            <% end %>
+        </div>
       </nav>
-    </header>
-    <main role="main">
-      <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
-      <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
-      <%= render @view_module, @view_template, assigns %>
-    </main>
+      <div class="root__main">
+        <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
+        <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+        <%= render @view_module, @view_template, assigns %>
+      </div>
+    </div>
     <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </body>
 </html>

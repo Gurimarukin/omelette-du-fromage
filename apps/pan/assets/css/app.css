@@ -5,37 +5,107 @@
 @import './show/index.css';
 @import './show/show.css';
 
-body {
-    background-color: navy;
-    color: wheat;
+/* font-wheight: 400 = normal, 700 = bold */
+@font-face {
+    font-family: 'librre';
+    src: url(../fonts/LibreFranklin-Regular.ttf);
 }
 
-.header {
+@font-face {
+    font-family: 'librre';
+    src: url(../fonts/LibreFranklin-Italic.ttf);
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'librre';
+    src: url(../fonts/LibreFranklin-Bold.ttf);
+    font-wheight: bold;
+}
+
+@font-face {
+    font-family: 'librre';
+    src: url(../fonts/LibreFranklin-BoldItalic.ttf);
+    font-style: italic;
+    font-wheight: bold;
+}
+
+:root {
+    /* --darkblue: #142739;
+    --blue: #2c5c72;
+    --lightblue: #799ba7;
+    --lightgreen: #bad7c8;
+    --lightyellow: #e0c89e; */
+
+    --darkgrey: #242d2c;
+    --grey: #46282f;
+    --lightgrey: #b7b99d;
+    --blue: #1d4e50;
+    --lightblue: #58766c;
+    --darkgreen: #3f794d;
+    --lightgreen: #86bd5d;
+    --yellow: #caae4d;
+    --orange: #e2803f;
+    --darkred: #5d282e;
+    --purple: #46282f;
+    --purple: #44283c;
+    --pink: #8a3a54;
+}
+
+.root {
+    background-color: var(--darkgrey);
+    font-family: 'librre';
+    font-weight: normal;
+    color: lightblue;
+    height: 100vh;
+    width: 100vw;
     display: flex;
-    justify-content: space-between;
-    padding: 1em;
-    background-color: darkgoldenrod;
-    align-items: center;
 }
 
-.header__home {
+.root__nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.root__home {
+    padding: 0.33em 0.67em;
     font-size: 1.2em;
     font-weight: bold;
-    color: darkred;
-    letter-spacing: -0.1ch;
+    /* color: var(--pink); */
 }
 
-.header__links {
+.root__links {
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1em;
+}
+
+.root__link,
+.root__link_current {
+    padding: 0.33em 0.67em;
+    transition: background-color 0.4s;
+}
+
+.root__link:not(:last-child),
+.root__link_current:not(:last-child) {
+    margin-bottom: 0.2em;
+}
+
+.root__link:hover,
+.root__link:focus,
+.root__link_current:hover,
+.root__link_current:focus {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.root__link_current {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.root__main {
     flex-grow: 1;
-    flex-basis: 0;
-}
-
-.header__links:last-of-type {
-    justify-content: flex-end;
-}
-
-.header__link:not(:last-of-type) {
-    order: initial;
-    margin-right: 0.67em;
+    padding: 1em;
 }
