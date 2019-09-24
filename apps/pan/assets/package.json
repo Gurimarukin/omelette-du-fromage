@@ -1,5 +1,6 @@
 {
   "repository": {},
+  "description": "Pan client",
   "license": "MIT",
   "scripts": {
     "deploy": "webpack --mode production",
