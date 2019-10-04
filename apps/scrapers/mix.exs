@@ -24,7 +24,7 @@ defmodule Scrapers.MixProject do
 
   defp deps do
     [
-      {:rate_limiter, in_umbrella: true},
+      {:rate_limitator, git: "https://github.com/Gurimarukin/rate_limitator.git", tag: "1.0.0"},
       {:shows_store, in_umbrella: true},
       {:httpoison, "~> 1.5"},
       {:floki, "~> 0.21"},

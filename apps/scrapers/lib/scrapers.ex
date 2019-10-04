@@ -3,7 +3,7 @@ defmodule Scrapers do
 
   def get_bodys(urls, name) do
     urls
-    |> Enum.map(&RateLimiter.with_limit(name, fn -> get_body(&1) end))
+    |> Enum.map(&RateLimitator.with_limit(name, fn -> get_body(&1) end))
     |> Enum.map(&Task.await/1)
   end
 

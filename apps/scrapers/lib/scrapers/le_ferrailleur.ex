@@ -18,7 +18,7 @@ defmodule Scrapers.LeFerrailleur do
       |> Enum.zip(months)
       |> Enum.flat_map(&scrap_month/1)
     after
-      RateLimiter.stop(__MODULE__)
+      RateLimitator.stop(__MODULE__)
     end
   end
 
